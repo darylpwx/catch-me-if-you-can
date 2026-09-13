@@ -512,6 +512,26 @@
     yesBtn.style.padding = (14 * scale) + 'px ' + (26 * scale) + 'px';
   }
 
+  function viewportSize(){
+    var vv = window.visualViewport;
+    return {
+      w: vv ? vv.width : document.documentElement.clientWidth,
+      h: vv ? vv.height : document.documentElement.clientHeight
+    };
+  }
+
+  function clampToViewport(){
+    var rect = noBtn.getBoundingClientRect();
+    var v = viewportSize();
+    var maxX = Math.max(v.w - rect.width - margin, margin);
+    var maxY = Math.max(v.h - rect.height - margin, margin);
+    var x = Math.min(Math.max(rect.left, margin), maxX);
+    var y = Math.min(Math.max(rect.top, margin), maxY);
+    noBtn.style.left = x + 'px';
+    noBtn.style.top = y + 'px';
+    return { maxX: maxX, maxY: maxY };
+  }
+
   function flee(){
     dodgeCount++;
     var idx = Math.min(dodgeCount - 1, messages.length - 1);
@@ -520,12 +540,14 @@
 
     if (!noBtn.classList.contains('fleeing')){
       noBtn.classList.add('fleeing');
+      noBtn.style.left = '0px';
+      noBtn.style.top = '0px';
     }
 
-    var w = noBtn.offsetWidth || 90;
-    var h = noBtn.offsetHeight || 48;
-    var maxX = Math.max(window.innerWidth - w - margin, margin);
-    var maxY = Math.max(window.innerHeight - h - margin, margin);
+    var rect = noBtn.getBoundingClientRect();
+    var v = viewportSize();
+    var maxX = Math.max(v.w - rect.width - margin, margin);
+    var maxY = Math.max(v.h - rect.height - margin, margin);
     var x = margin + Math.random() * (maxX - margin);
     var y = margin + Math.random() * (maxY - margin);
 
@@ -541,6 +563,15 @@
   noBtn.addEventListener('pointerenter', flee);
   noBtn.addEventListener('pointerdown', function(e){ e.preventDefault(); flee(); });
   noBtn.addEventListener('focus', flee);
+
+  window.addEventListener('resize', function(){
+    if (noBtn.classList.contains('fleeing')) clampToViewport();
+  });
+  if (window.visualViewport){
+    window.visualViewport.addEventListener('resize', function(){
+      if (noBtn.classList.contains('fleeing')) clampToViewport();
+    });
+  }
 
   yesBtn.addEventListener('click', function(){
     card.hidden = true;
