@@ -540,6 +540,7 @@
 
     if (!noBtn.classList.contains('fleeing')){
       noBtn.classList.add('fleeing');
+      document.body.appendChild(noBtn); // escape .card's transform, which would otherwise become the fixed-position containing block
       noBtn.style.left = '0px';
       noBtn.style.top = '0px';
     }
